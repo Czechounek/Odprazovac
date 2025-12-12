@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Odpražovač",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Automaticky nahrazuje obecnou češtinu za spisovnou češtinu",
   "permissions": [
     "storage",
@@ -9,7 +9,8 @@
     "scripting"
   ],
   "host_permissions": [
-    "<all_urls>"
+    "<all_urls>",
+    "https://firestore.googleapis.com/*"
   ],
   "action": {
     "default_popup": "popup.html",
@@ -18,7 +19,8 @@
     }
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "content_scripts": [
     {
