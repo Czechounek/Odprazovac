@@ -60,10 +60,38 @@ document.addEventListener('DOMContentLoaded', async () => {
       pageCount = 0;
     }
 
-    pageCounter.textContent = pageCount || 0;
-    totalCounter.textContent = totalCount;
-    globalCounter.textContent = globalCount;
+    animateCounter(pageCounter, pageCount || 0);
+    animateCounter(totalCounter, totalCount);
+    animateCounter(globalCounter, globalCount);
+    
     toggleButton.textContent = enabled ? 'Vypnout' : 'Zapnout';
     toggleButton.classList.toggle('disabled', !enabled);
+  }
+
+  function animateCounter(element, target) {
+    const duration = 800;
+    const start = 0;
+    const startTime = performance.now();
+    
+    element.classList.add('animate');
+    
+    function update(currentTime) {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+      const current = Math.floor(start + (target - start) * easeOutQuart);
+      
+      element.textContent = current;
+      
+      if (progress < 1) {
+        requestAnimationFrame(update);
+      } else {
+        element.textContent = target;
+        setTimeout(() => element.classList.remove('animate'), 100);
+      }
+    }
+    
+    requestAnimationFrame(update);
   }
 });

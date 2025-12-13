@@ -2,11 +2,17 @@ let dictionary = {};
 let pageCount = 0;
 let isEnabled = true;
 let observer = null;
+let toastTimeout = null;
 
 async function init() {
   const response = await fetch(chrome.runtime.getURL('dictionary.json'));
   dictionary = await response.json();
   
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = chrome.runtime.getURL('toast.css');
+  document.head.appendChild(link);
+
   const { enabled = true } = await chrome.storage.local.get(['enabled']);
   isEnabled = enabled;
   
@@ -14,6 +20,34 @@ async function init() {
     replaceTextInPage();
     observePageChanges();
   }
+}
+
+function showToast(count) {
+  const existingToast = document.querySelector('.odprazovac-toast');
+  if (existingToast) {
+    existingToast.remove();
+  }
+  
+  if (toastTimeout) {
+    clearTimeout(toastTimeout);
+  }
+  
+  const toast = document.createElement('div');
+  toast.className = 'odprazovac-toast';
+  toast.innerHTML = `
+    <div class="odprazovac-toast-icon">✨</div>
+    <div class="odprazovac-toast-text">
+      <div>Odpraženo!</div>
+      <div class="odprazovac-toast-count">${count} ${count === 1 ? 'slovo' : count < 5 ? 'slova' : 'slov'} opraveno</div>
+    </div>
+  `;
+  
+  document.body.appendChild(toast);
+  
+  toastTimeout = setTimeout(() => {
+    toast.classList.add('hiding');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
 }
 
 function replaceTextInPage() {
@@ -50,6 +84,7 @@ function replaceTextInPage() {
   
   if (localCount > 0) {
     pageCount += localCount;
+    showToast(localCount);
     chrome.runtime.sendMessage({ 
       action: 'incrementCounters', 
       count: localCount 
@@ -61,7 +96,7 @@ function replaceWords(text) {
   let replaced = text;
   let count = 0;
   
-  for (const [colloquial, standard] of Object.entries(dictionary)) {
+  for (const [colloquial, standard] of Object.entries(dictionary.replacements || {})) {
     const regex = new RegExp(`\\b${colloquial}\\b`, 'gi');
     replaced = replaced.replace(regex, (match) => {
       count++;
@@ -69,6 +104,29 @@ function replaceWords(text) {
         return standard.charAt(0).toUpperCase() + standard.slice(1);
       }
       return standard;
+    });
+  }
+  
+  if (dictionary.patterns && dictionary.patterns.adj_ej_to_y) {
+    const exceptions = new Set(
+      (dictionary.exceptions?.adj_ej_endings || []).map(word => word.toLowerCase())
+    );
+    
+    const ejPattern = /\b(\w+ej)\b/gi;
+    replaced = replaced.replace(ejPattern, (match) => {
+      const lowerMatch = match.toLowerCase();
+      
+      if (exceptions.has(lowerMatch)) {
+        return match;
+      }
+      
+      count++;
+      const newWord = match.slice(0, -2) + 'ý';
+      
+      if (match[0] === match[0].toUpperCase()) {
+        return newWord.charAt(0).toUpperCase() + newWord.slice(1);
+      }
+      return newWord;
     });
   }
   
@@ -87,6 +145,7 @@ function observePageChanges() {
           if (result.newText !== originalText) {
             node.nodeValue = result.newText;
             pageCount += result.count;
+            showToast(result.count);
             chrome.runtime.sendMessage({ 
               action: 'incrementCounters', 
               count: result.count 
@@ -134,6 +193,7 @@ function replaceTextInElement(element) {
   
   if (localCount > 0) {
     pageCount += localCount;
+    showToast(localCount);
     chrome.runtime.sendMessage({ 
       action: 'incrementCounters', 
       count: localCount 

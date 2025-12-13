@@ -28,5 +28,9 @@
       "js": ["content.js"],
       "run_at": "document_idle"
     }
-  ]
+  ],
+  "web_accessible_resources": [{
+    "resources": ["dictionary.json", "toast.css"],
+    "matches": ["<all_urls>"]
+  }]
 }
