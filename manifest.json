@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Odpražovač",
-  "version": "0.9.1",
-  "description": "Automaticky nahrazuje obecnou češtinu za spisovnou češtinu",
+  "name": "__MSG_appName__",
+  "version": "1.0.0",
+  "description": "__MSG_appDesc__",
+  "default_locale": "cs",
   "permissions": [
     "storage",
     "activeTab",

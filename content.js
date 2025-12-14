@@ -34,8 +34,14 @@ function showToast(count) {
   
   const toast = document.createElement('div');
   toast.className = 'odprazovac-toast';
-  toast.innerHTML = `
-    <div class="odprazovac-toast-icon">✨</div>
+  toast.innerHTML = /* html */ `
+    <div class="odprazovac-toast-icon">
+      <svg width="16" height="16" viewBox="0 0 3 2" xmlns="http://www.w3.org/2000/svg">
+        <rect width="3" height="2" fill="#D7141A"/>
+        <rect width="3" height="1" fill="#FFFFFF"/>
+        <polygon points="0,0 1.5,1 0,2" fill="#11457E"/>
+      </svg>
+    </div>
     <div class="odprazovac-toast-text">
       <div>Odpraženo!</div>
       <div class="odprazovac-toast-count">${count} ${count === 1 ? 'slovo' : count < 5 ? 'slova' : 'slov'} opraveno</div>
@@ -106,28 +112,67 @@ function replaceWords(text) {
       return standard;
     });
   }
+
+  for (const [colloquial, standard] of Object.entries(dictionary.multiword_replacements || {})) {
+    const regex = new RegExp(colloquial.replace(/\s+/g, '\\s+'), 'gi');
+    replaced = replaced.replace(regex, (match) => {
+      count++;
+      if (match[0] === match[0].toUpperCase()) {
+        return standard.charAt(0).toUpperCase() + standard.slice(1);
+      }
+      return standard;
+    });
+  }
   
-  if (dictionary.patterns && dictionary.patterns.adj_ej_to_y) {
+  if (dictionary.patterns) {
     const exceptions = new Set(
       (dictionary.exceptions?.adj_ej_endings || []).map(word => word.toLowerCase())
     );
     
-    const ejPattern = /\b(\w+ej)\b/gi;
-    replaced = replaced.replace(ejPattern, (match) => {
-      const lowerMatch = match.toLowerCase();
-      
-      if (exceptions.has(lowerMatch)) {
-        return match;
-      }
-      
-      count++;
-      const newWord = match.slice(0, -2) + 'ý';
-      
-      if (match[0] === match[0].toUpperCase()) {
-        return newWord.charAt(0).toUpperCase() + newWord.slice(1);
-      }
-      return newWord;
-    });
+    if (dictionary.patterns.adj_ej_to_y) {
+      const ejPattern = /\b(\w+ej)\b/gi;
+      replaced = replaced.replace(ejPattern, (match) => {
+        const lowerMatch = match.toLowerCase();
+        
+        if (exceptions.has(lowerMatch)) {
+          return match;
+        }
+        
+        count++;
+        const newWord = match.slice(0, -2) + 'ý';
+        
+        if (match[0] === match[0].toUpperCase()) {
+          return newWord.charAt(0).toUpperCase() + newWord.slice(1);
+        }
+        return newWord;
+      });
+    }
+
+    if (dictionary.patterns.adj_enej_to_eny) {
+      const enejPattern = /\b(\w+enej)\b/gi;
+      replaced = replaced.replace(enejPattern, (match) => {
+        count++;
+        const newWord = match.slice(0, -4) + 'ený';
+        
+        if (match[0] === match[0].toUpperCase()) {
+          return newWord.charAt(0).toUpperCase() + newWord.slice(1);
+        }
+        return newWord;
+      });
+    }
+
+    if (dictionary.patterns.adj_ovy_to_ovej) {
+      const ovejPattern = /\b(\w+ovej)\b/gi;
+      replaced = replaced.replace(ovejPattern, (match) => {
+        count++;
+        const newWord = match.slice(0, -4) + 'ový';
+        
+        if (match[0] === match[0].toUpperCase()) {
+          return newWord.charAt(0).toUpperCase() + newWord.slice(1);
+        }
+        return newWord;
+      });
+    }
   }
   
   return { newText: replaced, count };

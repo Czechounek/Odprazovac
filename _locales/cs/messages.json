@@ -1,0 +1,10 @@
+{
+  "appName": {
+    "message": "Odpražovač",
+    "description": "Název rozšíření"
+  },
+  "appDesc": {
+    "message": "Automaticky nahrazuje obecnou češtinu za spisovnou češtinu",
+    "description": "Popis rozšíření"
+  }
+}
