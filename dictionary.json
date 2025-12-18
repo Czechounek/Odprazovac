@@ -227,7 +227,9 @@
     "vlasama": "vlasy",
     "květinama": "květinami",
     "zejtra": "zítra",
-    "mlíko": "mléko"
+    "mlíko": "mléko",
+    "nes": "nesl",
+    "upad": "upadl"
   },
   "multiword_replacements": {
     "přijdu dýl": "přijdu později",
@@ -278,7 +280,7 @@
       "description": "Zájmeno vo- → o- (vona → ona, von → on)"
     },
     "past_masc_no_l": {
-      "pattern": "(řek|moh|pích|nes)$",
+      "pattern": "(řek|moh|pích)$",
       "replacement": "$1l",
       "description": "Doplnění -l u příčestí minulého (řek → řekl, moh → mohl, pích → píchl)"
     }
